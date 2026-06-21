@@ -20,6 +20,18 @@
     },
     "web": {
       "favicon": "./assets/favicon.png"
+    },
+    "extra": {
+      "eas": {
+        "projectId": "69ed2dfb-94ec-4c7b-9af2-b6c1dd7cabea"
+      }
+    },
+    "owner": "hlahla",
+    "runtimeVersion": {
+      "policy": "appVersion"
+    },
+    "updates": {
+      "url": "https://u.expo.dev/69ed2dfb-94ec-4c7b-9af2-b6c1dd7cabea"
     }
   }
 }
