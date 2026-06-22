@@ -1,17 +1,19 @@
 {
   "expo": {
-    "name": "myapp",
-    "slug": "myapp",
+    "name": "Applied",
+    "slug": "applied",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "bundleIdentifier": "com.applied.jobsearch"
     },
     "android": {
+      "package": "com.applied.jobsearch",
       "adaptiveIcon": {
-        "backgroundColor": "#E6F4FE",
+        "backgroundColor": "#111111",
         "foregroundImage": "./assets/android-icon-foreground.png",
         "backgroundImage": "./assets/android-icon-background.png",
         "monochromeImage": "./assets/android-icon-monochrome.png"
