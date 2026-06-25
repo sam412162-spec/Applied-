@@ -1,5 +1,5 @@
 import { Ionicons } from '@expo/vector-icons';
-import { Linking, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { Job, JOB_TYPE_COLORS, PLATFORM_COLORS, PLATFORM_ICONS } from '../data/jobs';
 import { useSaved } from '../context/SavedContext';
 
@@ -9,15 +9,14 @@ interface Props {
 }
 
 export default function JobCard({ job, onPress }: Props) {
-  const { isSaved, isApplied, toggleSaved, markApplied } = useSaved();
+  const { isSaved, isApplied, toggleSaved, applyToJob } = useSaved();
   const color = PLATFORM_COLORS[job.platform];
   const icon = PLATFORM_ICONS[job.platform] as any;
   const saved = isSaved(job.id);
   const applied = isApplied(job.id);
 
   const handleApply = () => {
-    markApplied(job.id);
-    Linking.openURL(job.url);
+    applyToJob(job.id, job.url);
   };
 
   return (

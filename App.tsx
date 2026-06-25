@@ -1,15 +1,18 @@
 import { NavigationContainer } from '@react-navigation/native';
 import { StatusBar } from 'expo-status-bar';
+import { AuthProvider } from './context/AuthContext';
 import { SavedProvider } from './context/SavedContext';
-import TabNavigator from './navigation/TabNavigator';
+import RootNavigator from './navigation/RootNavigator';
 
 export default function App() {
   return (
-    <SavedProvider>
-      <NavigationContainer>
-        <StatusBar style="dark" />
-        <TabNavigator />
-      </NavigationContainer>
-    </SavedProvider>
+    <AuthProvider>
+      <SavedProvider>
+        <NavigationContainer>
+          <StatusBar style="dark" />
+          <RootNavigator />
+        </NavigationContainer>
+      </SavedProvider>
+    </AuthProvider>
   );
 }
