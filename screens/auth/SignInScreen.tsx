@@ -17,12 +17,13 @@ interface Props {
 }
 
 export default function SignInScreen({ onGoSignUp }: Props) {
-  const { signIn } = useAuth();
+  const { signIn, resetPassword } = useAuth();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPw, setShowPw] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [resetSent, setResetSent] = useState(false);
 
   const handleSignIn = async () => {
     if (!email || !password) { setError('Please fill in all fields.'); return; }
@@ -33,10 +34,19 @@ export default function SignInScreen({ onGoSignUp }: Props) {
     if (error) setError(error);
   };
 
+  const handleForgotPassword = async () => {
+    if (!email) { setError('Enter your email above first.'); return; }
+    setLoading(true);
+    setError(null);
+    const { error } = await resetPassword(email.trim());
+    setLoading(false);
+    if (error) { setError(error); return; }
+    setResetSent(true);
+  };
+
   return (
     <KeyboardAvoidingView style={styles.container} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
       <View style={styles.inner}>
-        {/* Logo */}
         <View style={styles.logoBlock}>
           <View style={styles.logoCircle}>
             <Text style={styles.logoText}>A</Text>
@@ -46,6 +56,13 @@ export default function SignInScreen({ onGoSignUp }: Props) {
         </View>
 
         <Text style={styles.heading}>Welcome back</Text>
+
+        {resetSent && (
+          <View style={styles.successBox}>
+            <Ionicons name="checkmark-circle-outline" size={15} color="#059669" />
+            <Text style={styles.successText}>Password reset email sent — check your inbox.</Text>
+          </View>
+        )}
 
         {error && (
           <View style={styles.errorBox}>
@@ -69,7 +86,12 @@ export default function SignInScreen({ onGoSignUp }: Props) {
         </View>
 
         <View style={styles.field}>
-          <Text style={styles.label}>Password</Text>
+          <View style={styles.labelRow}>
+            <Text style={styles.label}>Password</Text>
+            <TouchableOpacity onPress={handleForgotPassword} disabled={loading}>
+              <Text style={styles.forgotLink}>Forgot password?</Text>
+            </TouchableOpacity>
+          </View>
           <View style={styles.pwRow}>
             <TextInput
               style={[styles.input, { flex: 1 }]}
@@ -119,13 +141,20 @@ const styles = StyleSheet.create({
   appName: { fontSize: 26, fontWeight: '800', color: '#111', letterSpacing: -0.5 },
   tagline: { fontSize: 13, color: '#888', marginTop: 2 },
   heading: { fontSize: 22, fontWeight: '800', color: '#111', marginBottom: 20 },
+  successBox: {
+    flexDirection: 'row', alignItems: 'center', gap: 7,
+    backgroundColor: '#dcfce7', borderRadius: 10, padding: 12, marginBottom: 14,
+  },
+  successText: { fontSize: 13, color: '#059669', flex: 1 },
   errorBox: {
     flexDirection: 'row', alignItems: 'center', gap: 7,
     backgroundColor: '#fef2f2', borderRadius: 10, padding: 12, marginBottom: 14,
   },
   errorText: { fontSize: 13, color: '#dc2626', flex: 1 },
   field: { marginBottom: 16 },
-  label: { fontSize: 13, fontWeight: '600', color: '#555', marginBottom: 6 },
+  labelRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 },
+  label: { fontSize: 13, fontWeight: '600', color: '#555' },
+  forgotLink: { fontSize: 13, fontWeight: '600', color: '#6366f1' },
   input: {
     backgroundColor: '#fff', borderRadius: 12, paddingHorizontal: 14, paddingVertical: 13,
     fontSize: 14, color: '#111',

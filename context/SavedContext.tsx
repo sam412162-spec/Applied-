@@ -31,8 +31,8 @@ export function SavedProvider({ children }: { children: ReactNode }) {
       setAppliedIds(new Set());
       return;
     }
-    fetchSavedJobIds(user.id).then(ids => setSavedIds(new Set(ids))).catch(() => {});
-    fetchAppliedJobIds(user.id).then(ids => setAppliedIds(new Set(ids))).catch(() => {});
+    fetchSavedJobIds().then(ids => setSavedIds(new Set(ids))).catch(() => {});
+    fetchAppliedJobIds().then(ids => setAppliedIds(new Set(ids))).catch(() => {});
   }, [user]);
 
   const toggleSaved = async (jobId: string) => {
@@ -44,7 +44,7 @@ export function SavedProvider({ children }: { children: ReactNode }) {
       return next;
     });
     try {
-      isSavedNow ? await unsaveJob(user.id, jobId) : await saveJob(user.id, jobId);
+      isSavedNow ? await unsaveJob(jobId) : await saveJob(jobId);
     } catch {
       setSavedIds(prev => {
         const next = new Set(prev);
@@ -56,8 +56,10 @@ export function SavedProvider({ children }: { children: ReactNode }) {
 
   const applyToJob = async (jobId: string, url: string) => {
     if (!user) return;
+    // Finding #7: validate URL scheme before opening
+    if (!url.startsWith('https://') && !url.startsWith('http://')) return;
     setAppliedIds(prev => new Set([...prev, jobId]));
-    await markJobApplied(user.id, jobId).catch(() => {});
+    await markJobApplied(jobId).catch(() => {});
     Linking.openURL(url);
   };
 

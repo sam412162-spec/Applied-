@@ -1,6 +1,13 @@
 import { supabase } from './supabase';
 
-export async function fetchSavedJobIds(userId: string): Promise<string[]> {
+async function getVerifiedUserId(): Promise<string> {
+  const { data: { user }, error } = await supabase.auth.getUser();
+  if (error || !user) throw new Error('Not authenticated');
+  return user.id;
+}
+
+export async function fetchSavedJobIds(): Promise<string[]> {
+  const userId = await getVerifiedUserId();
   const { data, error } = await supabase
     .from('saved_jobs')
     .select('job_id')
@@ -9,12 +16,14 @@ export async function fetchSavedJobIds(userId: string): Promise<string[]> {
   return (data ?? []).map(r => r.job_id);
 }
 
-export async function saveJob(userId: string, jobId: string) {
+export async function saveJob(jobId: string) {
+  const userId = await getVerifiedUserId();
   const { error } = await supabase.from('saved_jobs').insert({ user_id: userId, job_id: jobId });
   if (error) throw error;
 }
 
-export async function unsaveJob(userId: string, jobId: string) {
+export async function unsaveJob(jobId: string) {
+  const userId = await getVerifiedUserId();
   const { error } = await supabase
     .from('saved_jobs')
     .delete()
@@ -22,7 +31,8 @@ export async function unsaveJob(userId: string, jobId: string) {
   if (error) throw error;
 }
 
-export async function fetchAppliedJobIds(userId: string): Promise<string[]> {
+export async function fetchAppliedJobIds(): Promise<string[]> {
+  const userId = await getVerifiedUserId();
   const { data, error } = await supabase
     .from('applied_jobs')
     .select('job_id')
@@ -31,7 +41,8 @@ export async function fetchAppliedJobIds(userId: string): Promise<string[]> {
   return (data ?? []).map(r => r.job_id);
 }
 
-export async function markJobApplied(userId: string, jobId: string) {
+export async function markJobApplied(jobId: string) {
+  const userId = await getVerifiedUserId();
   const { error } = await supabase
     .from('applied_jobs')
     .upsert({ user_id: userId, job_id: jobId, status: 'applied' });

@@ -29,7 +29,7 @@ export default function SignUpScreen({ onGoSignIn }: Props) {
 
   const handleSignUp = async () => {
     if (!fullName || !email || !password) { setError('Please fill in all fields.'); return; }
-    if (password.length < 6) { setError('Password must be at least 6 characters.'); return; }
+    if (password.length < 8) { setError('Password must be at least 8 characters.'); return; }
     setLoading(true);
     setError(null);
     const { error } = await signUp(email.trim(), password, fullName.trim());
@@ -103,7 +103,7 @@ export default function SignUpScreen({ onGoSignIn }: Props) {
           <View style={styles.pwRow}>
             <TextInput
               style={[styles.input, { flex: 1 }]}
-              placeholder="Min. 6 characters"
+              placeholder="Min. 8 characters"
               placeholderTextColor="#bbb"
               value={password}
               onChangeText={setPassword}

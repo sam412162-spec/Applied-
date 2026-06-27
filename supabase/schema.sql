@@ -90,8 +90,12 @@ create table if not exists public.saved_jobs (
 
 alter table public.saved_jobs enable row level security;
 
-create policy "Users manage own saved jobs"
-  on public.saved_jobs for all using (auth.uid() = user_id);
+create policy "Users select own saved jobs"
+  on public.saved_jobs for select using (auth.uid() = user_id);
+create policy "Users insert own saved jobs"
+  on public.saved_jobs for insert with check (auth.uid() = user_id);
+create policy "Users delete own saved jobs"
+  on public.saved_jobs for delete using (auth.uid() = user_id);
 
 -- ─────────────────────────────────────────
 -- APPLIED JOBS
@@ -108,8 +112,14 @@ create table if not exists public.applied_jobs (
 
 alter table public.applied_jobs enable row level security;
 
-create policy "Users manage own applied jobs"
-  on public.applied_jobs for all using (auth.uid() = user_id);
+create policy "Users select own applied jobs"
+  on public.applied_jobs for select using (auth.uid() = user_id);
+create policy "Users insert own applied jobs"
+  on public.applied_jobs for insert with check (auth.uid() = user_id);
+create policy "Users update own applied jobs"
+  on public.applied_jobs for update using (auth.uid() = user_id) with check (auth.uid() = user_id);
+create policy "Users delete own applied jobs"
+  on public.applied_jobs for delete using (auth.uid() = user_id);
 
 -- ─────────────────────────────────────────
 -- SUBSCRIPTIONS  (Stripe manages payment — we only store status)

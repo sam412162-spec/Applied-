@@ -32,7 +32,9 @@ export async function fetchJobs(filters?: {
   if (filters?.experienceLevel) query = query.eq('experience_level', filters.experienceLevel);
   if (filters?.remote !== undefined) query = query.eq('remote', filters.remote);
   if (filters?.search) {
-    query = query.or(`title.ilike.%${filters.search}%,company.ilike.%${filters.search}%,description.ilike.%${filters.search}%`);
+    // Strip PostgREST filter special chars and cap length to prevent filter injection
+    const safe = filters.search.replace(/[(),%*]/g, '').slice(0, 100);
+    query = query.or(`title.ilike.%${safe}%,company.ilike.%${safe}%,description.ilike.%${safe}%`);
   }
 
   const { data, error } = await query;
