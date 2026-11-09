@@ -1,8 +1,15 @@
 name: Claude PR Review
 
-# Runs an automatic code review and security review on every pull request.
-# Requires a repository secret named ANTHROPIC_API_KEY
-# (Settings → Secrets and variables → Actions → New repository secret).
+# Runs an automatic code + security review on every pull request.
+#
+# Uses your Claude Pro/Max subscription (no separate API billing).
+# Requires a repository secret named CLAUDE_CODE_OAUTH_TOKEN:
+#   - easiest: run `/install-github-app` inside Claude Code on your computer, or
+#   - run `claude setup-token` and paste the token into
+#     Settings → Secrets and variables → Actions → New repository secret.
+#
+# Note: claude-code-action only runs once this file is on the default branch,
+# so the PR that adds or changes it is skipped.
 
 on:
   pull_request:
@@ -13,7 +20,7 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  code-review:
+  review:
     if: github.event.pull_request.draft == false
     runs-on: ubuntu-latest
     permissions:
@@ -27,7 +34,7 @@ jobs:
 
       - uses: anthropics/claude-code-action@v1
         with:
-          anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
+          claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
           track_progress: true
           prompt: |
             REPO: ${{ github.repository }}
@@ -35,39 +42,27 @@ jobs:
 
             Review this pull request for Applied, an Expo / React Native app
             (TypeScript, React Navigation) backed by Supabase, with Stripe payments.
+            Do a code review and a security review in one pass.
 
-            Focus on:
-            1. Correctness bugs: broken logic, unhandled errors or loading states,
+            Correctness:
+            1. Broken logic, unhandled errors or loading states,
                async/await mistakes, null/undefined crashes.
-            2. Supabase: queries that rely on the client for authorization,
-               missing or weakened row-level security in supabase/schema.sql,
-               service-role keys or secrets in client code.
-            3. Payments: Stripe secret keys or payment logic that must run
-               server-side but is in the app.
-            4. React Native: unnecessary re-renders, large lists not virtualised,
+            2. React Native: unnecessary re-renders, large lists not virtualised,
                navigation params used without validation.
-            5. TypeScript: `any`, unsafe casts, types that don't match the schema.
+            3. TypeScript: `any`, unsafe casts, types that don't match the schema.
 
-            Only report real problems. Use inline comments for specific lines
-            and one short top-level summary comment. If nothing significant is
-            found, say so briefly.
+            Security:
+            4. Secrets: API keys, Supabase service-role keys, Stripe secret keys,
+               or tokens committed in code or config.
+            5. Supabase: queries that rely on the client for authorization,
+               missing or weakened row-level security in supabase/schema.sql,
+               tables readable or writable by other users.
+            6. Payments: Stripe logic that must run server-side but is in the app.
+            7. Injection, unsafe deep-link handling, user data logged or stored
+               insecurely (e.g. tokens in AsyncStorage without need).
+
+            Only report real problems, and label each as [bug] or [security].
+            Use inline comments for specific lines and one short top-level
+            summary comment. If nothing significant is found, say so briefly.
           claude_args: |
             --allowedTools "mcp__github_inline_comment__create_inline_comment,Bash(gh pr comment:*),Bash(gh pr diff:*),Bash(gh pr view:*)"
-
-  security-review:
-    if: github.event.pull_request.draft == false
-    runs-on: ubuntu-latest
-    permissions:
-      contents: read
-      pull-requests: write
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          ref: ${{ github.event.pull_request.head.sha || github.sha }}
-          fetch-depth: 2
-
-      - uses: anthropics/claude-code-security-review@main
-        with:
-          comment-pr: true
-          claude-api-key: ${{ secrets.ANTHROPIC_API_KEY }}
-          exclude-directories: node_modules,assets
